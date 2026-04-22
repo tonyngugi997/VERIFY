@@ -109,5 +109,18 @@ def register_routes(app):
             
             parsed_ua = parse_user_agent(user_agent)
             device_info = f"{parsed_ua.browser.family} on {parsed_ua.os.family}"
+            
+            from models import get_failed_attempt_count
+            failed_count = get_failed_attempt_count(username, 15)
+            
+            if failed_count >= 5:
+                flash('Too many failed login attempts. Please try again after 15 minutes.', 'error')
+                from models import log_login_attempt
+                log_login_attempt(None, username, ip_address, user_agent, False, 'Rate limit exceeded')
+                return render_template('login.html')
+            
+            if not username or not password:
+                flash('Please enter username and password.', 'error')
+                return render_template('login.html')
         
         return render_template('login.html')
