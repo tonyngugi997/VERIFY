@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ action }} Recruitee - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+        }
+
+        .form-container {
+            max-width: 650px;
+            width: 100%;
+            background: rgba(15, 25, 45, 0.85);
+            backdrop-filter: blur(16px);
+            border-radius: 32px;
+            padding: 2rem;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4), 0 0 20px rgba(212, 175, 55, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .form-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .form-header h1 {
+            color: #D4AF37;
+            font-weight: 700;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-link {
+            color: #D4AF37;
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            background: rgba(212, 175, 55, 0.1);
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            background: rgba(212, 175, 55, 0.2);
+            transform: translateX(-3px);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            color: #D4AF37;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .required:after {
+            content: " *";
+            color: #f56565;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 16px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #D4AF37;
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Premium Select Styles */
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23D4AF37' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+            background-repeat: no-repeat;
+            background-position: right 18px center;
+            cursor: pointer;
+        }
+
+        select option {
+            background: #0f172a;
+            color: white;
+            padding: 12px;
+        }
+
+        select option:hover,
+        select option:checked {
+            background: #D4AF37;
+            color: #0a1f1a;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #D4AF37, #b8960c);
+            border: none;
+            padding: 14px 24px;
+            border-radius: 60px;
+            color: #0a1f1a;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        small {
+            display: block;
+            margin-top: 6px;
+            color: rgba(212, 175, 55, 0.7);
+            font-size: 0.75rem;
+        }
+
+        /* Toast styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: rgba(20, 30, 45, 0.98);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 12px 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            animation: slideInRight 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .toast.success { border-left-color: #48bb78; }
+        .toast.error { border-left-color: #f56565; }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            margin-left: auto;
+            font-size: 1.2rem;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 1rem; }
+            .form-container { padding: 1.5rem; }
+            .form-row { flex-direction: column; gap: 0; }
+            .form-header h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <h1><i class="fas fa-{{ 'edit' if action == 'Edit' else 'plus' }}"></i> {{ action }} Recruitee</h1>
+            <a href="/admin/database" class="back-link"><i class="fas fa-arrow-left"></i> Back</a>
+        </div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label class="required">ID Number (6-10 digits)</label>
+                <input type="text" name="id_number" value="{{ recruitee.id_number if recruitee else '' }}" {% if action == 'Edit' %}readonly{% endif %} required placeholder="Enter 6-10 digit ID">
+                {% if action == 'Edit' %}<small>🔒 ID cannot be changed</small>{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="required">Full Name</label>
+                <input type="text" name="name" value="{{ recruitee.name if recruitee else '' }}" required placeholder="e.g., John Mwangi">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select name="gender">
+                        <option value="">-- Select Gender --</option>
+                        <option value="M" {% if recruitee and recruitee.gender == 'M' %}selected{% endif %}>👨 Male (M)</option>
+                        <option value="F" {% if recruitee and recruitee.gender == 'F' %}selected{% endif %}>👩 Female (F)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Size</label>
+                    <select name="size">
+                        <option value="">-- Select Size --</option>
+                        <option value="S" {% if recruitee and recruitee.size == 'S' %}selected{% endif %}>S - Small</option>
+                        <option value="M" {% if recruitee and recruitee.size == 'M' %}selected{% endif %}>M - Medium</option>
+                        <option value="L" {% if recruitee and recruitee.size == 'L' %}selected{% endif %}>L - Large</option>
+                        <option value="XL" {% if recruitee and recruitee.size == 'XL' %}selected{% endif %}>XL - Extra Large</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone" value="{{ recruitee.phone_number if recruitee else '' }}" placeholder="e.g., 0712345678">
+            </div>
+
+            <div class="form-group">
+                <label>🎓 Education Level</label>
+                <select name="education">
+                    <option value="">-- Select Education Level --</option>
+                    <option value="Class 8" {% if recruitee and recruitee.education_level == 'Class 8' %}selected{% endif %}>📚 Class 8 (Primary)</option>
+                    <option value="Form 4" {% if recruitee and recruitee.education_level == 'Form 4' %}selected{% endif %}>📖 Form 4 (Secondary)</option>
+                    <option value="Diploma" {% if recruitee and recruitee.education_level == 'Diploma' %}selected{% endif %}>🎓 Diploma</option>
+                    <option value="Degree" {% if recruitee and recruitee.education_level == 'Degree' %}selected{% endif %}>🎓 Degree</option>
+                    <option value="Masters" {% if recruitee and recruitee.education_level == 'Masters' %}selected{% endif %}>🎓 Masters</option>
+                    <option value="None" {% if recruitee and recruitee.education_level == 'None' %}selected{% endif %}>📌 None</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="required">Cohort Number</label>
+                <input type="number" name="cohort" value="{{ recruitee.cohort_number if recruitee else '' }}" min="1" max="99" required placeholder="e.g., 9">
+                <small>Current recruitment cohort is 9</small>
+            </div>
+
+            <button type="submit"><i class="fas fa-save"></i> {{ action }} Recruitee</button>
+        </form>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        function showToast(message, type) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            let icon = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>';
+            toast.innerHTML = `${icon}<div class="toast-content">${escapeHtml(message)}</div><button class="toast-close">&times;</button>`;
+            container.appendChild(toast);
+            toast.querySelector('.toast-close').onclick = () => toast.remove();
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const flash = document.querySelector('.flash-message');
+            if (flash) {
+                let type = flash.classList.contains('success') ? 'success' : 'error';
+                showToast(flash.textContent, type);
+            }
+        });
+    </script>
+</body>
+</html>
