@@ -33,6 +33,7 @@ def register_routes(app):
                     'message': 'ID number must contain only digits (0-9).'
                 })
             
+            # Dynamic ID length: 6 to 10 digits
             if len(id_number) < 6 or len(id_number) > 10:
                 return render_template('index.html', result={
                     'status': 'ERROR',
@@ -94,6 +95,7 @@ def register_routes(app):
     
     @app.route('/login', methods=['GET', 'POST'])
     def login():
+        # If already logged in, redirect to index
         if current_user.is_authenticated:
             return redirect(url_for('index'))
         
@@ -101,20 +103,25 @@ def register_routes(app):
             username = request.form.get('username', '').strip()
             password = request.form.get('password', '').strip()
             
+            # Get client IP address (handles proxy headers)
             ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
             if ip_address and ',' in ip_address:
                 ip_address = ip_address.split(',')[0].strip()
             
+            # Get user agent for device tracking
             user_agent = request.headers.get('User-Agent', 'Unknown')
             
+            # Parse user agent for device info
             parsed_ua = parse_user_agent(user_agent)
             device_info = f"{parsed_ua.browser.family} on {parsed_ua.os.family}"
             
+            # Rate limiting: check failed attempts in last 15 minutes
             from models import get_failed_attempt_count
             failed_count = get_failed_attempt_count(username, 15)
             
             if failed_count >= 5:
                 flash('Too many failed login attempts. Please try again after 15 minutes.', 'error')
+                # Log this attempt as well
                 from models import log_login_attempt
                 log_login_attempt(None, username, ip_address, user_agent, False, 'Rate limit exceeded')
                 return render_template('login.html')
@@ -126,19 +133,24 @@ def register_routes(app):
             user = get_user_by_username(username)
             
             if user and bcrypt.checkpw(password.encode('utf-8'), user['hashed_password'].encode('utf-8')):
+                # Successful login
                 from models import log_login_attempt, create_active_session
                 
+                # Log successful attempt
                 log_login_attempt(user['id'], username, ip_address, user_agent, True, None)
                 
+                # Create user object and log in
                 user_obj = User(user['id'], user['username'], user['role'])
                 login_user(user_obj, remember=True)
                 
+                # Create active session record
                 session_id = request.cookies.get('session', '') or str(uuid.uuid4())
                 create_active_session(user['id'], session_id, ip_address, user_agent, device_info)
                 
                 flash(f'Welcome back, {username}!', 'success')
                 return redirect(url_for('index'))
             else:
+                # Failed login
                 from models import log_login_attempt
                 failure_reason = 'Invalid username or password'
                 log_login_attempt(user['id'] if user else None, username, ip_address, user_agent, False, failure_reason)
