@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Recruitment System</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .settings-page {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .settings-header h1 {
+            color: white;
+            font-weight: 600;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .back-link {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 20px;
+            border-radius: 40px;
+            color: #D4AF37;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .back-link:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(-3px);
+        }
+        /* Tabs */
+        .settings-tabs {
+            display: flex;
+            gap: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 60px;
+            padding: 6px;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 50px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .tab-btn i {
+            margin-right: 8px;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #D4AF37, #b8960c);
+            color: #0a1f1a;
+            box-shadow: 0 4px 12px rgba(212,175,55,0.3);
+        }
+        .tab-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Card styles */
+        .info-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .info-card h3 {
+            color: #D4AF37;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        /* Table styles */
+        .history-table, .sessions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .history-table th, .sessions-table th {
+            text-align: left;
+            padding: 12px;
+            color: #D4AF37;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .history-table td, .sessions-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #e0e0e0;
+        }
+        .badge-success {
+            background: #2E7D32;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            display: inline-block;
+        }
+        .badge-failed {
+            background: #f56565;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            display: inline-block;
+        }
+        .btn-logout-others {
+            background: rgba(212,175,55,0.2);
+            border: 1px solid #D4AF37;
+            padding: 10px 20px;
+            border-radius: 40px;
+            color: #D4AF37;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-logout-others:hover {
+            background: rgba(212,175,55,0.4);
+        }
+        .current-session {
+            background: rgba(78,205,196,0.15);
+            border-left: 3px solid #4ecdc4;
+        }
+        /* Dark mode toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2d3748;
+            transition: 0.3s;
+            border-radius: 30px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #D4AF37;
+        }
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #aaa;
+        }
+        .error-message {
+            color: #f56565;
+            text-align: center;
+            padding: 1rem;
+        }
+        @media (max-width: 768px) {
+            .settings-page { padding: 1rem; }
+            .settings-tabs { border-radius: 20px; }
+            .tab-btn { padding: 8px 16px; font-size: 0.75rem; }
+            .history-table, .sessions-table { display: block; overflow-x: auto; }
+            .history-table th, .sessions-table th,
+            .history-table td, .sessions-table td { font-size: 0.75rem; padding: 8px; }
+        }
+    </style>
+</head>
+<body class="settings-page">
+    <div class="settings-container">
+        <div class="settings-header">
+            <h1><i class="fas fa-sliders-h"></i> Settings</h1>
+            <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+
+        <!-- Tabs -->
+        <div class="settings-tabs">
+            <button class="tab-btn active" data-tab="security">
+                <i class="fas fa-shield-alt"></i> Security
+            </button>
+            <button class="tab-btn" data-tab="history">
+                <i class="fas fa-history"></i> Login History
+            </button>
+            <button class="tab-btn" data-tab="appearance">
+                <i class="fas fa-palette"></i> Appearance
+            </button>
+            {% if current_user.is_admin %}
+            <button class="tab-btn" data-tab="admin">
+                <i class="fas fa-cog"></i> System Settings
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Tab: Security (Sessions + Change Password) -->
+        <div id="tab-security" class="tab-content active">
+            <div class="info-card">
+                <h3><i class="fas fa-desktop"></i> Active Sessions</h3>
+                <div id="sessions-list">
+                    <div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading sessions...</div>
+                </div>
+                <button id="logoutOthersBtn" class="btn-logout-others" style="margin-top: 1rem;">
+                    <i class="fas fa-sign-out-alt"></i> Logout from all other devices
+                </button>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-key"></i> Change Password</h3>
+                <p><a href="/profile/change-password" style="color: #D4AF37; text-decoration: none;"><i class="fas fa-arrow-right"></i> Click here to change your password</a></p>
+            </div>
+        </div>
+
+        <!-- Tab: Login History -->
+        <div id="tab-history" class="tab-content">
+            <div class="info-card">
+                <h3><i class="fas fa-history"></i> Recent Login Activity</h3>
+                <div id="history-list">
+                    <div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading login history...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Appearance (Dark/Light Mode) -->
+        <div id="tab-appearance" class="tab-content">
+            <div class="info-card">
+                <h3><i class="fas fa-moon"></i> Theme Preference</h3>
+                <div class="theme-toggle">
+                    <span><i class="fas fa-sun"></i> Light Mode</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span><i class="fas fa-moon"></i> Dark Mode</span>
+                </div>
+                <p style="margin-top: 1rem; color: #aaa; font-size: 0.8rem;">
+                    <i class="fas fa-info-circle"></i> Your preference is saved automatically in your browser.
+                </p>
+            </div>
+        </div>
+
+        <!-- Tab: Admin (System Settings) - Only visible to admin -->
+        {% if current_user.is_admin %}
+        <div id="tab-admin" class="tab-content">
+            <div class="info-card">
+                <h3><i class="fas fa-database"></i> System Settings</h3>
+                <div id="system-settings">
+                    <div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading system settings...</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                const tabId = `tab-${btn.dataset.tab}`;
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Load sessions data
+        function loadSessions() {
+            fetch('/settings/sessions-data')
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('sessions-list');
+                    if (data.error) {
+                        container.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> ${data.error}</div>`;
+                        return;
+                    }
+                    if (data.sessions && data.sessions.length > 0) {
+                        let html = '<table class="sessions-table"><thead><tr><th>Device</th><th>IP Address</th><th>Location</th><th>Login Time</th><th>Last Active</th></tr></thead><tbody>';
+                        data.sessions.forEach(s => {
+                            const isCurrent = s.is_current ? 'current-session' : '';
+                            html += `<tr class="${isCurrent}">
+                                <td>${escapeHtml(s.device_info || 'Unknown')} ${s.is_current ? '<span style="color:#4ecdc4;"> (Current)</span>' : ''}</td>
+                                <td>${escapeHtml(s.ip_address || '-')}</td>
+                                <td>${escapeHtml(s.location || '-')}</td>
+                                <td>${escapeHtml(s.login_time || '-')}</td>
+                                <td>${escapeHtml(s.last_activity || '-')}</td>
+                            </tr>`;
+                        });
+                        html += '</tbody></table>';
+                        container.innerHTML = html;
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><i class="fas fa-info-circle"></i> No active sessions found.</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading sessions:', error);
+                    document.getElementById('sessions-list').innerHTML = '<div class="error-message"><i class="fas fa-exclamation-triangle"></i> Failed to load sessions. Please refresh.</div>';
+                });
+        }
+
+        // Load login history
+        function loadHistory() {
+            fetch('/settings/login-history-data')
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('history-list');
+                    if (data.error) {
+                        container.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> ${data.error}</div>`;
+                        return;
+                    }
+                    if (data.history && data.history.length > 0) {
+                        let html = '<table class="history-table"><thead><tr><th>Username</th><th>IP Address</th><th>Location</th><th>Status</th><th>Time</th></tr></thead><tbody>';
+                        data.history.forEach(h => {
+                            const statusBadge = h.success ? '<span class="badge-success">Success</span>' : '<span class="badge-failed">Failed</span>';
+                            html += `<tr>
+                                <td>${escapeHtml(h.username)}</td>
+                                <td>${escapeHtml(h.ip_address || '-')}</td>
+                                <td>${escapeHtml(h.location || '-')}</td>
+                                <td>${statusBadge}</td>
+                                <td>${escapeHtml(h.created_at || '-')}</td>
+                            </tr>`;
+                        });
+                        html += '</tbody></table>';
+                        container.innerHTML = html;
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><i class="fas fa-info-circle"></i> No login history found.</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading history:', error);
+                    document.getElementById('history-list').innerHTML = '<div class="error-message"><i class="fas fa-exclamation-triangle"></i> Failed to load login history.</div>';
+                });
+        }
+
+        // Logout from other devices
+        const logoutBtn = document.getElementById('logoutOthersBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                fetch('/settings/logout-others', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(`✅ Logged out from ${data.count} other device(s).`);
+                            loadSessions();
+                        } else {
+                            alert('❌ Error: ' + (data.error || 'Unknown error'));
+                        }
+                    })
+                    .catch(error => {
+                        alert('❌ Failed to logout other devices.');
+                    });
+            });
+        }
+
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if (darkModeToggle) {
+            // Check saved preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            darkModeToggle.addEventListener('change', () => {
+                if (darkModeToggle.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Load admin settings if admin
+        {% if current_user.is_admin %}
+        function loadSystemSettings() {
+            fetch('/admin/system-settings-data')
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('system-settings');
+                    if (data.error) {
+                        container.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> ${data.error}</div>`;
+                        return;
+                    }
+                    if (data) {
+                        let html = '<div style="margin-bottom: 1rem;"><label style="color: #D4AF37; display: block; margin-bottom: 8px; font-weight: 500;">Current Recruitment Cohort</label>';
+                        html += `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <input type="number" id="cohortInput" value="${escapeHtml(data.current_cohort)}" min="1" max="50" style="background: rgba(0,0,0,0.5); border: 1px solid #D4AF37; color: white; padding: 12px 16px; border-radius: 12px; width: 120px; font-size: 1rem;">
+                            <button id="saveCohortBtn" style="background: #D4AF37; border: none; padding: 12px 24px; border-radius: 40px; cursor: pointer; font-weight: 600; transition: all 0.2s;">Save Changes</button>
+                        </div>`;
+                        html += '<p style="margin-top: 1rem; color: #aaa; font-size: 0.8rem;"><i class="fas fa-info-circle"></i> This changes the cohort number shown on the main verification page. Current message will update automatically.</p></div>';
+                        container.innerHTML = html;
+                        
+                        const saveBtn = document.getElementById('saveCohortBtn');
+                        if (saveBtn) {
+                            saveBtn.addEventListener('click', () => {
+                                const newCohort = document.getElementById('cohortInput').value;
+                                if (!newCohort || newCohort < 1 || newCohort > 50) {
+                                    alert('Please enter a valid cohort number (1-50).');
+                                    return;
+                                }
+                                fetch('/admin/update-cohort', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ cohort: newCohort })
+                                }).then(res => res.json()).then(data => {
+                                    if (data.success) {
+                                        alert(`✅ ${data.message}`);
+                                    } else {
+                                        alert('❌ Failed to update cohort.');
+                                    }
+                                }).catch(error => {
+                                    alert('❌ Error updating cohort.');
+                                });
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading system settings:', error);
+                    document.getElementById('system-settings').innerHTML = '<div class="error-message"><i class="fas fa-exclamation-triangle"></i> Failed to load system settings.</div>';
+                });
+        }
+        loadSystemSettings();
+        {% endif %}
+
+        // Load all data on page load
+        loadSessions();
+        loadHistory();
+    </script>
+</body>
+</html>
