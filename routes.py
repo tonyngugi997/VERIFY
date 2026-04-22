@@ -122,5 +122,27 @@ def register_routes(app):
             if not username or not password:
                 flash('Please enter username and password.', 'error')
                 return render_template('login.html')
+            
+            user = get_user_by_username(username)
+            
+            if user and bcrypt.checkpw(password.encode('utf-8'), user['hashed_password'].encode('utf-8')):
+                from models import log_login_attempt, create_active_session
+                
+                log_login_attempt(user['id'], username, ip_address, user_agent, True, None)
+                
+                user_obj = User(user['id'], user['username'], user['role'])
+                login_user(user_obj, remember=True)
+                
+                session_id = request.cookies.get('session', '') or str(uuid.uuid4())
+                create_active_session(user['id'], session_id, ip_address, user_agent, device_info)
+                
+                flash(f'Welcome back, {username}!', 'success')
+                return redirect(url_for('index'))
+            else:
+                from models import log_login_attempt
+                failure_reason = 'Invalid username or password'
+                log_login_attempt(user['id'] if user else None, username, ip_address, user_agent, False, failure_reason)
+                flash('Invalid username or password.', 'error')
+                return render_template('login.html')
         
         return render_template('login.html')
