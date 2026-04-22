@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Youth Service Recruitment Verification</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/media_queries.css">
+</head>
+<body>
+<div class="main-content" id="mainContent">
+
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <!-- Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <!-- Sidebar -->
+    <div class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="sidebar-logo">
+                <span>Admin Portal</span>
+            </div>
+            <button class="close-sidebar" id="closeSidebar">&times;</button>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="/admin/database"><i class="fas fa-database"></i> Update Database</a></li>
+            <li><a href="/admin/staff"><i class="fas fa-users"></i> Update Staff</a></li>
+        </ul>
+    </div>
+
+    <button class="open-sidebar" id="openSidebar"><i class="fas fa-bars"></i></button>
+    {% endif %}
+    
+    <!-- Shard animation overlay -->
+    <div class="shard-overlay">
+        <div class="shard shard-1"></div>
+        <div class="shard shard-2"></div>
+        <div class="shard shard-3"></div>
+        <div class="shard shard-4"></div>
+    </div>
+
+    <!-- Sticky Header -->
+    <header class="sleek-header">
+        <div class="header-container">
+            {% if current_user.is_authenticated and current_user.is_admin %}
+            <button class="open-sidebar" id="openSidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            {% endif %}
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Muranga County Logo" class="logo-img">
+                </div>
+                <div class="logo-text">
+                    <span class="logo-title">Muranga Youth Service</span>
+                    <span class="logo-subtitle">Recruitment Verification Portal</span>
+                </div>
+            </div>
+            <div class="user-area">
+                <div class="user-profile" id="userProfile">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="user-name">Staff</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="/profile"><i class="fas fa-user"></i> Profile</a>
+                    <a href="/settings"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <div class="container">
+            <h1>Verification System</h1>
+            <p>Enter ID Number or Name to check if applicant has been recruited before</p>
+            
+            <form action="/verify" method="POST">
+                <!-- Search Toggle -->
+                <div class="search-toggle">
+                    <label class="toggle-option">
+                        <input type="radio" name="search_type" value="id" checked> 
+                        <span>ID Number</span>
+                    </label>
+                    <label class="toggle-option">
+                        <input type="radio" name="search_type" value="name"> 
+                        <span>Name</span>
+                    </label>
+                </div>
+
+                <!-- Search input field -->
+                <input type="text" name="id_number" id="searchInput" placeholder="Enter ID Number (6-10 digits)" required>
+
+                <!-- Suggestions and spinner -->
+                <div id="nameSuggestions" class="suggestions-list"></div>
+                <div id="searchSpinner" class="search-spinner" style="display: none;">
+                    <div class="spinner"></div>
+                </div>
+
+                <button type="submit">Verify</button>
+            </form>
+
+            {% if result %}
+                <div class="result {{ result.status }}">
+                    <h2>{{ result.status }}</h2>
+                    <p>{{ result.message }}</p>
+                    
+                    {% if result.status == 'REJECTED' and result.details %}
+                        <div class="details-card">
+                            <h3>Registered Applicant Details</h3>
+                            <div class="details-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Full Name:</span>
+                                    <span class="detail-value">{{ result.details.name }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Gender:</span>
+                                    <span class="detail-value">{{ result.details.gender }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Size:</span>
+                                    <span class="detail-value">{{ result.details.size }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Phone Number:</span>
+                                    <span class="detail-value">{{ result.details.phone }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Cohort:</span>
+                                    <span class="detail-value">Cohort {{ result.details.cohort }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Education:</span>
+                                    <span class="detail-value">{{ result.details.education or 'Not specified' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <style>
+        .sleek-header .open-sidebar {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            background: rgba(255,255,255,0.2) !important;
+            width: 42px !important;
+            height: 42px !important;
+            border-radius: 12px !important;
+            margin-right: 12px !important;
+            z-index: 1002 !important;
+            pointer-events: auto !important;
+            color: black !important;
+        }
+        
+        .open-sidebar:not(.sleek-header .open-sidebar) {
+            display: none !important;
+        }
+        
+        .admin-sidebar {
+            z-index: 9999 !important;
+        }
+        .sidebar-overlay {
+            z-index: 9998 !important;
+        }
+    </style>
+
+    <footer class="county-footer">
+        <div class="footer-border-animate"></div>
+        
+        <div class="footer-particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+        
+        <div class="footer-container">
+            
+            <div class="footer-official">
+                <div class="coat-of-arms">
+                    <div class="arms-outer-ring"></div>
+                    <div class="arms-inner-ring"></div>
+                    <div class="arms-shield">
+                        <i class="fas fa-landmark"></i>
+                    </div>
+                    <div class="arms-spears">
+                        <span class="spear spear-left"></span>
+                        <span class="spear spear-right"></span>
+                    </div>
+                </div>
+                <div class="official-text">
+                    <h3>County Government of Murang'a</h3>
+                    <p class="motto">"Kamùingì Koyaga Ndìrì - Unity is Strength"</p>
+                    <p class="official-stamp">Official Government Portal • Republic of Kenya</p>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <h4><i class="fas fa-link"></i> Quick Links</h4>
+                <ul>
+                    <li><a href="https://muranga.go.ke/tenders.php"><i class="fas fa-chevron-right"></i> County Tenders</a></li>
+                    <li><a href="https://muranga.go.ke/careers.php"><i class="fas fa-chevron-right"></i> Careers</a></li>
+                    <li><a href="https://lands.muranga.go.ke/"><i class="fas fa-chevron-right"></i> Land Services</a></li>
+                    <li><a href="https://muranga.go.ke/public.php"><i class="fas fa-chevron-right"></i> Public service & Administration</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-dev">
+                <h4><i class="fas fa-code"></i> Dev Information</h4>
+                <div class="dev-card">
+                    <div class="dev-header">
+                        <div class="dev-avatar">
+                            <span>BK</span>
+                        </div>
+                        <div class="dev-title">
+                            <p class="dev-label">Developed & Maintained by</p>
+                            <p class="dev-name">Brenda Kang'acha</p>
+                            <p class="dev-role">Senior Software Engineer</p>
+                        </div>
+                    </div>
+                    <div class="dev-social">
+                        <a href="https://github.com/Brenda-bree/" target="_blank" class="social-link github" aria-label="GitHub">
+                            <i class="fab fa-github"></i>
+                            <span>GitHub</span>
+                        </a>
+                        <a href="https://facebook.com/brenda kangacha" target="_blank" class="social-link facebook" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                            <span>Facebook</span>
+                        </a>
+                        <a href="https://instagram.com/kkbresh clsdkc" target="_blank" class="social-link instagram" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                            <span>Instagram</span>
+                        </a>
+                        <a href="https://brenda-kangacha.vercel.app/" target="_blank" class="social-link website" aria-label="Website">
+                            <i class="fas fa-globe"></i>
+                            <span>Portfolio</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Bar -->
+        <div class="footer-bottom">
+            <div class="footer-bottom-left">
+                <span class="copyright">© 2026 County Government of Murang'a. All Rights Reserved.</span>
+            </div>
+            <div class="footer-bottom-right">
+                <span class="version">v2.1.0</span>
+                <span class="separator">|</span>
+                <span class="certification"><i class="fas fa-lock"></i> Secure Government Portal</span>
+                <span class="separator">|</span>
+                <span class="certification"><i class="fas fa-certificate"></i> ISO 27001 Certified</span>
+            </div>
+        </div>
+
+        <div class="footer-scanline"></div>
+    </footer>
+
+    <script src="/static/js/index.js"></script>
+
+</body>
+</html>
