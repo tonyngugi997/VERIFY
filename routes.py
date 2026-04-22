@@ -360,3 +360,42 @@ def register_routes(app):
                 flash('An error occurred. Please try again.', 'error')
         
         return render_template('change_password.html')
+    
+    @app.route('/settings')
+    @login_required
+    def settings():
+        return render_template('settings.html')
+
+    @app.route('/settings/sessions-data')
+    @login_required
+    def settings_sessions_data():
+        from models import get_user_active_sessions, get_all_active_sessions
+        if current_user.is_admin:
+            sessions = get_all_active_sessions()
+            sessions_list = [dict(s) for s in sessions]
+        else:
+            sessions = get_user_active_sessions(current_user.id)
+            sessions_list = []
+            for s in sessions:
+                s_dict = dict(s)
+                s_dict['is_current'] = (s_dict['session_id'] == request.cookies.get('session', ''))
+                sessions_list.append(s_dict)
+        return jsonify({'sessions': sessions_list})
+
+    @app.route('/settings/login-history-data')
+    @login_required
+    def settings_login_history_data():
+        from models import get_user_login_history, get_all_login_history
+        if current_user.is_admin:
+            history = get_all_login_history(100)
+        else:
+            history = get_user_login_history(current_user.id, 50)
+        return jsonify({'history': [dict(h) for h in history]})
+
+    @app.route('/settings/logout-others', methods=['POST'])
+    @login_required
+    def settings_logout_others():
+        from models import logout_other_sessions
+        current_session_id = request.cookies.get('session', '')
+        count = logout_other_sessions(current_user.id, current_session_id)
+        return jsonify({'success': True, 'count': count})
