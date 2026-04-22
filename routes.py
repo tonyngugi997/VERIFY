@@ -235,3 +235,44 @@ def register_routes(app):
             flash(f'❌ User not found or could not be deleted.', 'error')
         
         return redirect(url_for('admin_staff'))
+
+    @app.route('/admin/database')
+    @admin_required
+    def admin_database():
+        from models import get_all_recruitees
+        recruitees = get_all_recruitees()
+        return render_template('admin_database.html', recruitees=recruitees)
+
+    @app.route('/admin/database/add', methods=['GET', 'POST'])
+    @admin_required
+    def admin_add_recruitee():
+        if request.method == 'POST':
+            id_number = request.form.get('id_number', '').strip()
+            name = request.form.get('name', '').strip()
+            gender = request.form.get('gender', '')
+            size = request.form.get('size', '')
+            phone = request.form.get('phone', '').strip()
+            cohort = request.form.get('cohort', '').strip()
+            education = request.form.get('education', '')
+            
+            if not id_number or not name or not cohort:
+                flash('ID Number, Name, and Cohort are required.', 'error')
+                return redirect(url_for('admin_add_recruitee'))
+            
+            if not id_number.isdigit():
+                flash('ID Number must contain only digits.', 'error')
+                return redirect(url_for('admin_add_recruitee'))
+            if len(id_number) < 6 or len(id_number) > 10:
+                flash('ID Number must be between 6 and 10 digits.', 'error')
+                return redirect(url_for('admin_add_recruitee'))
+            
+            from models import add_recruitee
+            success = add_recruitee(id_number, name, gender, size, phone, cohort, education)
+            if success:
+                flash(f'Recruitee {name} added successfully.', 'success')
+                return redirect(url_for('admin_database'))
+            else:
+                flash(f'ID Number {id_number} already exists.', 'error')
+                return redirect(url_for('admin_add_recruitee'))
+        
+        return render_template('admin_database_form.html', action='Add', recruitee=None)
