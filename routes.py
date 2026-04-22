@@ -399,3 +399,35 @@ def register_routes(app):
         current_session_id = request.cookies.get('session', '')
         count = logout_other_sessions(current_user.id, current_session_id)
         return jsonify({'success': True, 'count': count})
+    
+    @app.route('/admin/all-sessions')
+    @admin_required
+    def admin_all_sessions():
+        from models import get_all_active_sessions
+        sessions = get_all_active_sessions()
+        return render_template('admin_sessions.html', sessions=sessions)
+
+    @app.route('/admin/force-logout/<session_id>', methods=['POST'])
+    @admin_required
+    def admin_force_logout(session_id):
+        from models import force_logout_user_session
+        if force_logout_user_session(session_id):
+            return jsonify({'success': True, 'message': 'User logged out successfully'})
+        return jsonify({'success': False, 'message': 'Session not found'})
+
+    @app.route('/admin/system-settings-data')
+    @admin_required
+    def admin_system_settings_data():
+        from models import get_setting
+        return jsonify({
+            'current_cohort': get_setting('current_cohort', '9')
+        })
+
+    @app.route('/admin/update-cohort', methods=['POST'])
+    @admin_required
+    def admin_update_cohort():
+        from models import update_setting
+        data = request.get_json()
+        new_cohort = data.get('cohort', '9')
+        update_setting('current_cohort', str(new_cohort))
+        return jsonify({'success': True, 'message': f'Cohort updated to {new_cohort}'})
