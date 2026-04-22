@@ -276,3 +276,43 @@ def register_routes(app):
                 return redirect(url_for('admin_add_recruitee'))
         
         return render_template('admin_database_form.html', action='Add', recruitee=None)
+
+    @app.route('/admin/database/edit/<id_number>', methods=['GET', 'POST'])
+    @admin_required
+    def admin_edit_recruitee(id_number):
+        from models import get_recruitee_by_id, update_recruitee
+        if request.method == 'POST':
+            name = request.form.get('name', '').strip()
+            gender = request.form.get('gender', '')
+            size = request.form.get('size', '')
+            phone = request.form.get('phone', '').strip()
+            cohort = request.form.get('cohort', '').strip()
+            education = request.form.get('education', '')
+            
+            if not name or not cohort:
+                flash('Name and Cohort are required.', 'error')
+                return redirect(url_for('admin_edit_recruitee', id_number=id_number))
+            
+            success = update_recruitee(id_number, name, gender, size, phone, cohort, education)
+            if success:
+                flash(f'Recruitee {name} updated successfully.', 'success')
+                return redirect(url_for('admin_database'))
+            else:
+                flash('Update failed.', 'error')
+                return redirect(url_for('admin_edit_recruitee', id_number=id_number))
+        
+        recruitee = get_recruitee_by_id(id_number)
+        if not recruitee:
+            flash('Recruitee not found.', 'error')
+            return redirect(url_for('admin_database'))
+        return render_template('admin_database_form.html', action='Edit', recruitee=recruitee)
+
+    @app.route('/admin/database/delete/<id_number>')
+    @admin_required
+    def admin_delete_recruitee(id_number):
+        from models import delete_recruitee
+        if delete_recruitee(id_number):
+            flash('Recruitee deleted successfully.', 'success')
+        else:
+            flash('Recruitee not found.', 'error')
+        return redirect(url_for('admin_database'))
