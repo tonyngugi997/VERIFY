@@ -38,3 +38,12 @@ def register_routes(app):
                     'status': 'ERROR',
                     'message': 'ID number must be between 6 and 10 digits.'
                 })
+            
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT name, gender, size, phone_number, cohort_number, education_level FROM recruitees WHERE id_number = ?",
+                (id_number,)
+            )
+            existing = cursor.fetchone()
+            conn.close()
