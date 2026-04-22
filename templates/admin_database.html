@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Database - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/admin_database.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+</head>
+<body class="admin-page">
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1><i class="fas fa-database"></i> Manage Recruitees</h1>
+            <div>
+                <a href="/admin/database/add" class="btn-add"><i class="fas fa-plus"></i> Add New</a>
+                <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <table class="recruitee-table">
+                <thead>
+                    <tr>
+                        <th>ID Number</th>
+                        <th>Name</th>
+                        <th>Gender</th>
+                        <th>Size</th>
+                        <th>Phone</th>
+                        <th>Cohort</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in recruitees %}
+                    <tr>
+                        <td data-label="ID Number">{{ r.id_number }}</td>
+                        <td data-label="Name">{{ r.name }}</td>
+                        <td data-label="Gender">{{ r.gender or '-' }}</td>
+                        <td data-label="Size">{{ r.size or '-' }}</td>
+                        <td data-label="Phone">{{ r.phone_number or '-' }}</td>
+                        <td data-label="Cohort"><span class="badge-cohort">Cohort {{ r.cohort_number }}</span></td>
+                        <td data-label="Actions">
+                            <div class="action-buttons">
+                                <a href="/admin/database/edit/{{ r.id_number }}" class="btn-edit"><i class="fas fa-edit"></i> Edit</a>
+                                <a href="/admin/database/delete/{{ r.id_number }}" class="btn-delete" data-delete-link="true"><i class="fas fa-trash"></i> Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+   
+
+    <script src="/static/js/admin_database.js"></script>    
+</body>
+</html>
