@@ -91,3 +91,13 @@ def register_routes(app):
                 'status': 'APPROVED',
                 'message': f"Clear for registration in Cohort {current_cohort}."
             })
+    
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        if current_user.is_authenticated:
+            return redirect(url_for('index'))
+        
+        if request.method == 'POST':
+            pass
+        
+        return render_template('login.html')
