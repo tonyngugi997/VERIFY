@@ -316,3 +316,47 @@ def register_routes(app):
         else:
             flash('Recruitee not found.', 'error')
         return redirect(url_for('admin_database'))
+
+    @app.route('/profile')
+    @login_required
+    def profile():
+        from models import get_user_by_id
+        user = get_user_by_id(current_user.id)
+        return render_template('profile.html', user=user)
+    
+    @app.route('/profile/change-password', methods=['GET', 'POST'])
+    @login_required
+    def change_password():
+        if request.method == 'POST':
+            current_password = request.form.get('current_password', '').strip()
+            new_password = request.form.get('new_password', '').strip()
+            confirm_password = request.form.get('confirm_password', '').strip()
+            
+            if not current_password or not new_password or not confirm_password:
+                flash('All fields are required.', 'error')
+                return render_template('change_password.html')
+            
+            if new_password != confirm_password:
+                flash('New passwords do not match.', 'error')
+                return render_template('change_password.html')
+            
+            if len(new_password) < 4:
+                flash('New password must be at least 4 characters.', 'error')
+                return render_template('change_password.html')
+            
+            from models import get_user_by_username
+            user = get_user_by_username(current_user.username)
+            if not user or not bcrypt.checkpw(current_password.encode('utf-8'), user['hashed_password'].encode('utf-8')):
+                flash('Current password is incorrect.', 'error')
+                return render_template('change_password.html')
+            
+            hashed_new = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+            from models import update_user_password
+            if update_user_password(current_user.id, hashed_new.decode('utf-8')):
+                flash('Password changed successfully. Please log in again.', 'success')
+                logout_user()
+                return redirect(url_for('login'))
+            else:
+                flash('An error occurred. Please try again.', 'error')
+        
+        return render_template('change_password.html')
