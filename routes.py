@@ -157,3 +157,30 @@ def register_routes(app):
         logout_user()
         flash('You have been logged out.', 'info')
         return redirect(url_for('login'))
+
+    @app.route('/debug/ids')
+    @admin_required
+    def debug_ids():
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id_number, name, cohort_number FROM recruitees LIMIT 10")
+        rows = cursor.fetchall()
+        conn.close()
+        return jsonify([dict(row) for row in rows])
+    
+    @app.route('/search/names', methods=['GET'])
+    @staff_required
+    def search_names():
+        query = request.args.get('q', '').strip()
+        if len(query) < 2:
+            return jsonify([])
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id_number, name, gender, size, phone_number, cohort_number, education_level FROM recruitees WHERE LOWER(name) LIKE ? LIMIT 10",
+            (f'%{query.lower()}%',)
+        )
+        rows = cursor.fetchall()
+        conn.close()
+        return jsonify([dict(row) for row in rows])
