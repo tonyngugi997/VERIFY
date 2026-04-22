@@ -47,3 +47,27 @@ def register_routes(app):
             )
             existing = cursor.fetchone()
             conn.close()
+            
+        else:  
+            name_term = request.form.get('id_number', '').strip()
+            
+            if not name_term:
+                return render_template('index.html', result={
+                    'status': 'ERROR',
+                    'message': 'Please enter a name to search.'
+                })
+            
+            if len(name_term) < 2:
+                return render_template('index.html', result={
+                    'status': 'ERROR',
+                    'message': 'Please enter at least 2 characters for name search.'
+                })
+            
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT name, gender, size, phone_number, cohort_number, education_level FROM recruitees WHERE LOWER(name) LIKE ? LIMIT 1",
+                (f'%{name_term.lower()}%',)
+            )
+            existing = cursor.fetchone()
+            conn.close()
