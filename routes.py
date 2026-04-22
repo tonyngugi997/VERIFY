@@ -71,3 +71,23 @@ def register_routes(app):
             )
             existing = cursor.fetchone()
             conn.close()
+        
+        if existing:
+            return render_template('index.html', result={
+                'status': 'REJECTED',
+                'message': f"{existing['name']} is already in Cohort {existing['cohort_number']}.",
+                'details': {
+                    'name': existing['name'],
+                    'gender': existing['gender'],
+                    'size': existing['size'],
+                    'phone': existing['phone_number'],
+                    'cohort': existing['cohort_number'],
+                    'education': existing['education_level']
+                }
+            })
+        else:
+            current_cohort = get_setting('current_cohort', '9')
+            return render_template('index.html', result={
+                'status': 'APPROVED',
+                'message': f"Clear for registration in Cohort {current_cohort}."
+            })
