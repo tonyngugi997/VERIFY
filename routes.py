@@ -98,6 +98,16 @@ def register_routes(app):
             return redirect(url_for('index'))
         
         if request.method == 'POST':
-            pass
+            username = request.form.get('username', '').strip()
+            password = request.form.get('password', '').strip()
+            
+            ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+            if ip_address and ',' in ip_address:
+                ip_address = ip_address.split(',')[0].strip()
+            
+            user_agent = request.headers.get('User-Agent', 'Unknown')
+            
+            parsed_ua = parse_user_agent(user_agent)
+            device_info = f"{parsed_ua.browser.family} on {parsed_ua.os.family}"
         
         return render_template('login.html')
