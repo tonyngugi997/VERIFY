@@ -184,3 +184,36 @@ def register_routes(app):
         rows = cursor.fetchall()
         conn.close()
         return jsonify([dict(row) for row in rows])
+
+    @app.route('/admin/staff')
+    @admin_required
+    def admin_staff():
+        from models import get_all_users
+        users = get_all_users()
+        return render_template('admin_staff.html', users=users, current_user=current_user)
+    
+    @app.route('/admin/staff/add', methods=['POST'])
+    @admin_required
+    def admin_add_user():
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+        role = request.form.get('role', 'staff')
+        
+        if not username or not password:
+            flash('Username and password are required.', 'error')
+            return redirect(url_for('admin_staff'))
+        
+        if len(password) < 4:
+            flash('Password must be at least 4 characters.', 'error')
+            return redirect(url_for('admin_staff'))
+        
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        from models import create_user
+        success = create_user(username, hashed.decode('utf-8'), role)
+        
+        if success:
+            flash(f'User "{username}" created successfully as {role}.', 'success')
+        else:
+            flash(f'Username "{username}" already exists.', 'error')
+        
+        return redirect(url_for('admin_staff'))
