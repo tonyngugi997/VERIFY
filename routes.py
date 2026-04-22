@@ -217,3 +217,21 @@ def register_routes(app):
             flash(f'Username "{username}" already exists.', 'error')
         
         return redirect(url_for('admin_staff'))
+    
+    @app.route('/admin/staff/delete/<int:user_id>')
+    @admin_required
+    def admin_delete_user(user_id):
+        current_user_id = int(current_user.id)
+        target_user_id = int(user_id)
+        
+        if target_user_id == current_user_id:
+            flash('❌ You cannot delete your own account. This action has been blocked.', 'error')
+            return redirect(url_for('admin_staff'))
+        
+        from models import delete_user_by_id
+        if delete_user_by_id(target_user_id):
+            flash(f'✅ User deleted successfully.', 'success')
+        else:
+            flash(f'❌ User not found or could not be deleted.', 'error')
+        
+        return redirect(url_for('admin_staff'))
