@@ -146,3 +146,14 @@ def register_routes(app):
                 return render_template('login.html')
         
         return render_template('login.html')
+    
+    @app.route('/logout')
+    @login_required
+    def logout():
+        from models import deactivate_session_on_logout
+        session_id = request.cookies.get('session', '')
+        if session_id:
+            deactivate_session_on_logout(session_id)
+        logout_user()
+        flash('You have been logged out.', 'info')
+        return redirect(url_for('login'))
