@@ -48,3 +48,124 @@ def register_routes(app):
             )
             existing = cursor.fetchone()
             conn.close()
+            
+        else:  
+            name_term = request.form.get('id_number', '').strip()
+            
+            if not name_term:
+                return render_template('index.html', result={
+                    'status': 'ERROR',
+                    'message': 'Please enter a name to search.'
+                })
+            
+            if len(name_term) < 2:
+                return render_template('index.html', result={
+                    'status': 'ERROR',
+                    'message': 'Please enter at least 2 characters for name search.'
+                })
+            
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT name, gender, size, phone_number, cohort_number, education_level FROM recruitees WHERE LOWER(name) LIKE ? LIMIT 1",
+                (f'%{name_term.lower()}%',)
+            )
+            existing = cursor.fetchone()
+            conn.close()
+        
+        if existing:
+            return render_template('index.html', result={
+                'status': 'REJECTED',
+                'message': f"{existing['name']} is already in Cohort {existing['cohort_number']}.",
+                'details': {
+                    'name': existing['name'],
+                    'gender': existing['gender'],
+                    'size': existing['size'],
+                    'phone': existing['phone_number'],
+                    'cohort': existing['cohort_number'],
+                    'education': existing['education_level']
+                }
+            })
+        else:
+            current_cohort = get_setting('current_cohort', '9')
+            return render_template('index.html', result={
+                'status': 'APPROVED',
+                'message': f"Clear for registration in Cohort {current_cohort}."
+            })
+    
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        # If already logged in, redirect to index
+        if current_user.is_authenticated:
+            return redirect(url_for('index'))
+        
+        if request.method == 'POST':
+            username = request.form.get('username', '').strip()
+            password = request.form.get('password', '').strip()
+            
+            # Get client IP address (handles proxy headers)
+            ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+            if ip_address and ',' in ip_address:
+                ip_address = ip_address.split(',')[0].strip()
+            
+            # Get user agent for device tracking
+            user_agent = request.headers.get('User-Agent', 'Unknown')
+            
+            # Parse user agent for device info
+            parsed_ua = parse_user_agent(user_agent)
+            device_info = f"{parsed_ua.browser.family} on {parsed_ua.os.family}"
+            
+            # Rate limiting: check failed attempts in last 15 minutes
+            from models import get_failed_attempt_count
+            failed_count = get_failed_attempt_count(username, 15)
+            
+            if failed_count >= 5:
+                flash('Too many failed login attempts. Please try again after 15 minutes.', 'error')
+                # Log this attempt as well
+                from models import log_login_attempt
+                log_login_attempt(None, username, ip_address, user_agent, False, 'Rate limit exceeded')
+                return render_template('login.html')
+            
+            if not username or not password:
+                flash('Please enter username and password.', 'error')
+                return render_template('login.html')
+            
+            user = get_user_by_username(username)
+            
+            if user and bcrypt.checkpw(password.encode('utf-8'), user['hashed_password'].encode('utf-8')):
+                # Successful login
+                from models import log_login_attempt, create_active_session
+                
+                # Log successful attempt
+                log_login_attempt(user['id'], username, ip_address, user_agent, True, None)
+                
+                # Create user object and log in
+                user_obj = User(user['id'], user['username'], user['role'])
+                login_user(user_obj, remember=True)
+                
+                # Create active session record
+                session_id = request.cookies.get('session', '') or str(uuid.uuid4())
+                create_active_session(user['id'], session_id, ip_address, user_agent, device_info)
+                
+                flash(f'Welcome back, {username}!', 'success')
+                return redirect(url_for('index'))
+            else:
+                # Failed login
+                from models import log_login_attempt
+                failure_reason = 'Invalid username or password'
+                log_login_attempt(user['id'] if user else None, username, ip_address, user_agent, False, failure_reason)
+                flash('Invalid username or password.', 'error')
+                return render_template('login.html')
+        
+        return render_template('login.html')
+    
+    @app.route('/logout')
+    @login_required
+    def logout():
+        from models import deactivate_session_on_logout
+        session_id = request.cookies.get('session', '')
+        if session_id:
+            deactivate_session_on_logout(session_id)
+        logout_user()
+        flash('You have been logged out.', 'info')
+        return redirect(url_for('login'))
